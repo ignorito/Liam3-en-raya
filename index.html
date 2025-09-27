@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 o 4 en Raya - Construye tu Edificio</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+   
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      min-height: 100vh;
+    }
+   
+    h1 {
+      color: #2c3e50;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 10px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+   
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+   
+    .panel {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+   
+    #game {
+      display: grid;
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+      position: relative;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+    }
+   
+    .cell {
+      background: #fff;
+      border: 3px solid #ff5252;
+      font-size: 2.5em;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      aspect-ratio: 1/1;
+    }
+   
+    .cell:hover {
+      background: #f8f9fa;
+      transform: scale(1.02);
+      border-color: #ff1744;
+    }
+   
+    .cell.x {
+      color: #8B4513;
+    }
+   
+    .cell.o {
+      color: #2c3e50;
+    }
+   
+    .winning-line {
+      position: absolute;
+      background-color: #ff5252;
+      z-index: 1;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+   
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: all 0.3s;
+      font-weight: bold;
+    }
+   
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+   
+    .music-control {
+      background: #2c3e50;
+      margin-top: 10px;
+    }
+   
+    .floor {
+      width: 120px;
+      height: 30px;
+      margin: 2px auto;
+      border: 1px solid #ddd;
+      text-align: center;
+      line-height: 30px;
+      color: #fff;
+      border-radius: 3px;
+      transition: all 0.5s ease;
+    }
+   
+    .built {
+      background: #4caf50 !important;
+    }
+   
+    .player-panel {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+   
+    .player {
+      padding: 15px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      min-width: 200px;
+      flex: 1;
+    }
+   
+    .player.active {
+      box-shadow: 0 0 15px rgba(52, 152, 219, 0.9);
+      transform: scale(1.05);
+    }
+   
+    .player1 {
+      border-left: 5px solid #8B4513;
+    }
+   
+    .player2 {
+      border-left: 5px solid #2c3e50;
+    }
+   
+    .building {
+      display: flex;
+      flex-direction: column-reverse; /* Cambiado para construir desde abajo */
+      align-items: center;
+      margin: 10px 0;
+    }
+   
+    .player1-building .built {
+      background: #A0522D !important;
+    }
+   
+    .player2-building .built {
+      background: #7f8c8d !important;
+    }
+   
+    .store-item {
+      margin: 8px 0;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+    }
+   
+    .store {
+      margin-bottom: 20px;
+    }
+   
+    .congratulations {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.98);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      z-index: 100;
+      display: none;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+    }
+   
+    .congratulations h2 {
+      color: #2c3e50;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+   
+    .congratulations p {
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
+   
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+      display: none;
+    }
+   
+    .music-player {
+      margin: 20px auto;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      max-width: 500px;
+    }
+   
+    .file-upload {
+      margin: 10px 0;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+   
+    .mode-select {
+      margin: 20px auto;
+      max-width: 500px;
+    }
+   
+    .board-size-select {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+    
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2c3e50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .current-turn {
+      font-size: 1.2em;
+      margin: 10px 0;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    .material-count {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      line-height: 25px;
+      text-align: center;
+      margin-left: 5px;
+    }
+    
+    .build-full-floor {
+      background: #64b5f6 !important; /* Azul claro */
+      margin-top: 10px;
+    }
+    
+    .build-full-floor:hover {
+      background: #42a5f5 !important;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Confetti animation */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: #f00;
+      opacity: 0.7;
+      z-index: 1000;
+      animation: fall linear forwards;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>3 o 4 en Raya - Construye tu Edificio</h1>
+
+  <div class="music-player">
+    <h3>Música de fondo</h3>
+    <div class="file-upload">
+      <p>Selecciona tu archivo de música (MP3):</p>
+      <input type="file" id="musicFile" accept="audio/mp3">
+    </div>
+    <button id="playMusic" onclick="playBackgroundMusic()">▶️ Reproducir</button>
+    <button id="pauseMusic" onclick="pauseBackgroundMusic()">⏸️ Pausar</button>
+    <button onclick="changeVolume(0.1)">🔊 +</button>
+    <button onclick="changeVolume(-0.1)">🔊 -</button>
+    <p id="nowPlaying">Música: Running Night</p>
+  </div>
+
+  <div class="player-panel">
+    <div class="player player1" id="player1">
+      <h3>Jugador 1 (X)</h3>
+      <p>Dinero: $<span id="money1">100</span></p>
+    </div>
+    <div class="player player2" id="player2">
+      <h3>Jugador 2 (O)</h3>
+      <p>Dinero: $<span id="money2">100</span></p>
+    </div>
+  </div>
+  
+  <div id="currentTurn" class="current-turn">Turno actual: Jugador 1 (X)</div>
+
+  <div id="modeSelect" class="panel mode-select">
+    <h3>Selecciona el modo de juego</h3>
+    <button onclick="setMode(1)">1 Jugador (vs CPU)</button>
+    <button onclick="setMode(2)">2 Jugadores</button>
+    <div id="difficultySelect" style="margin-top:10px; display:none;">
+      <h4>Dificultad CPU:</h4>
+      <button onclick="setDifficulty('easy')">Fácil</button>
+      <button onclick="setDifficulty('medium')">Medio</button>
+      <button onclick="setDifficulty('hard')">Difícil</button>
+    </div>
+   
+    <div class="board-size-select">
+      <h4>Tamaño del tablero:</h4>
+      <button onclick="setBoardSize(3)">3 en Raya (3x3)</button>
+      <button onclick="setBoardSize(4)">4 en Raya (4x4)</button>
+    </div>
+  </div>
+
+  <div id="game"></div>
+
+  <div class="container">
+    <div class="panel store">
+      <h3>Tienda - Jugador 1</h3>
+      <div class="store-item">
+        <p>Madera ($50) <span id="material1-0" class="material-count">0</span></p>
+        <button onclick="buy(0, 'Madera',50)">Comprar</button>
+      </div>
+      <div class="store-item">
+        <p>Cristal ($20) <span id="material1-1" class="material-count">0</span></p>
+        <button onclick="buy(0, 'Cristal',20)">Comprar</button>
+      </div>
+      <div class="store-item">
+        <p>Cemento ($37) <span id="material1-2" class="material-count">0</span></p>
+        <button onclick="buy(0, 'Cemento',37)">Comprar</button>
+      </div>
+      <br>
+      <button onclick="build(0)">Construir Planta ($220)</button>
+      <button class="build-full-floor" onclick="buildFullFloor(0)">Pagar Planta Completa ($307)</button>
+      <p>Materiales: <span id="materials1">Ninguno</span></p>
+    </div>
+
+    <div class="panel">
+      <h3>Edificio Jugador 1 (5 plantas)</h3>
+      <div id="floors1" class="building player1-building"></div>
+    </div>
+
+    <div class="panel">
+      <div id="scoreboard">
+        <h3>Marcador</h3>
+        <p>Victorias Jugador 1: <span id="winsX">0</span></p>
+        <p>Victorias Jugador 2 / CPU: <span id="winsO">0</span></p>
+        <p>Empates: <span id="draws">0</span></p>
+      </div>
+      <button onclick="resetGame()">Volver a Jugar</button>
+      <button onclick="resetScore()">Reiniciar Marcador</button>
+    </div>
+
+    <div class="panel">
+      <h3>Edificio Jugador 2 (5 plantas)</h3>
+      <div id="floors2" class="building player2-building"></div>
+    </div>
+   
+    <div class="panel store">
+      <h3>Tienda - Jugador 2</h3>
+      <div class="store-item">
+        <p>Madera ($50) <span id="material2-0" class="material-count">0</span></p>
+        <button onclick="buy(1, 'Madera',50)">Comprar</button>
+      </div>
+      <div class="store-item">
+        <p>Cristal ($20) <span id="material2-1" class="material-count">0</span></p>
+        <button onclick="buy(1, 'Cristal',20)">Comprar</button>
+      </div>
+      <div class="store-item">
+        <p>Cemento ($37) <span id="material2-2" class="material-count">0</span></p>
+        <button onclick="buy(1, 'Cemento',37)">Comprar</button>
+      </div>
+      <br>
+      <button onclick="build(1)">Construir Planta ($220)</button>
+      <button class="build-full-floor" onclick="buildFullFloor(1)">Pagar Planta Completa ($307)</button>
+      <p>Materiales: <span id="materials2">Ninguno</span></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="congratulations" id="congratulations">
+    <h2 id="congrats-title">¡Enhorabuena!</h2>
+    <p id="congrats-message"></p>
+    <button onclick="hideCongratulations()">Cerrar</button>
+  </div>
+  
+  <div class="notification" id="notification"></div>
+
+  <script>
+    const game = document.getElementById("game");
+    const money1Display = document.getElementById("money1");
+    const money2Display = document.getElementById("money2");
+    const materials1Display = document.getElementById("materials1");
+    const materials2Display = document.getElementById("materials2");
+    const winsXDisplay = document.getElementById("winsX");
+    const winsODisplay = document.getElementById("winsO");
+    const drawsDisplay = document.getElementById("draws");
+    const floors1Div = document.getElementById("floors1");
+    const floors2Div = document.getElementById("floors2");
+    const player1Div = document.getElementById("player1");
+    const player2Div = document.getElementById("player2");
+    const congratulationsDiv = document.getElementById("congratulations");
+    const congratsTitle = document.getElementById("congrats-title");
+    const congratsMessage = document.getElementById("congrats-message");
+    const overlay = document.getElementById("overlay");
+    const musicFileInput = document.getElementById("musicFile");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const currentTurnDisplay = document.getElementById("currentTurn");
+    const notification = document.getElementById("notification");
+
+    let board = [];
+    let boardSize = 3; // Tamaño por defecto
+    let currentPlayer = "X";
+    let money = [100, 100];
+    let materials = [[], []];
+    let mode = 0;
+    let difficulty = "medium";
+    let winsX = 0, winsO = 0, draws = 0;
+    let buildingProgress = [0, 0];
+    let winningLine = null;
+    let backgroundMusic = null;
+    let gameActive = true;
+
+    // Sistema de recompensas
+    const rewards = {
+      win: {
+        "3_easy": 10,
+        "3_medium": 20,
+        "3_hard": 30,
+        "4_easy": 40,
+        "4_medium": 50,
+        "4_hard": 60
+      },
+      draw: {
+        "3": 7,
+        "4": 17
+      }
+    };
+
+    // Inicializar música de fondo
+    function initBackgroundMusic() {
+      try {
+        backgroundMusic = new Audio("https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3");
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+        nowPlaying.textContent = "Música: Game Suspense (respaldo)";
+      } catch (error) {
+        console.error("Error al cargar música de respaldo:", error);
+      }
+    }
+
+    // Configurar el input de archivo para cargar música personalizada
+    musicFileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const objectURL = URL.createObjectURL(file);
+        if (backgroundMusic) {
+          backgroundMusic.pause();
+        }
+        backgroundMusic = new Audio(objectURL);
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+        nowPlaying.textContent = "Música: " + file.name;
+       
+        backgroundMusic.addEventListener('canplaythrough', function() {
+          console.log("Música cargada y lista para reproducir");
+        });
+       
+        backgroundMusic.addEventListener('error', function(e) {
+          console.error("Error al cargar el archivo de audio:", e);
+          showNotification("Error al cargar el archivo de audio. Asegúrate de que es un archivo MP3 válido.", "error");
+        });
+      }
+    });
+
+    function playBackgroundMusic() {
+      if (!backgroundMusic) {
+        initBackgroundMusic();
+      }
+     
+      if (backgroundMusic) {
+        const playPromise = backgroundMusic.play();
+       
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log("Música reproduciéndose");
+            })
+            .catch(error => {
+              console.log("Reproducción automática prevenida:", error);
+              showNotification("Por favor, haz clic en 'Reproducir' después de que la página se haya cargado completamente.", "info");
+            });
+        }
+      }
+    }
+
+    function pauseBackgroundMusic() {
+      if (backgroundMusic) {
+        backgroundMusic.pause();
+      }
+    }
+
+    function changeVolume(delta) {
+      if (backgroundMusic) {
+        backgroundMusic.volume = Math.max(0, Math.min(1, backgroundMusic.volume + delta));
+      }
+    }
+
+    // Mostrar notificación
+    function showNotification(message, type = "info") {
+      notification.textContent = message;
+      notification.style.display = "block";
+      notification.style.background = type === "error" ? "#e74c3c" : "#2c3e50";
+      
+      setTimeout(() => {
+        notification.style.display = "none";
+      }, 3000);
+    }
+
+    // Crear tablero según el tamaño seleccionado
+    function createBoard() {
+      game.innerHTML = '';
+      board = Array(boardSize * boardSize).fill("");
+     
+      // Ajustar el tamaño de las celdas según el tamaño del tablero
+      const cellSize = boardSize === 3 ? 100 : 80;
+      game.style.gridTemplateColumns = `repeat(${boardSize}, ${cellSize}px)`;
+      game.style.gridTemplateRows = `repeat(${boardSize}, ${cellSize}px)`;
+      game.style.maxWidth = `${(cellSize + 5) * boardSize + 20}px`;
+     
+      for (let i = 0; i < boardSize * boardSize; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.style.width = `${cellSize}px`;
+        cell.style.height = `${cellSize}px`;
+        cell.style.fontSize = boardSize === 3 ? '2.5em' : '2em';
+        cell.addEventListener("click", handleMove);
+        game.appendChild(cell);
+      }
+    }
+
+    // Crear edificios vacíos
+    function createBuildings() {
+      floors1Div.innerHTML = '';
+      floors2Div.innerHTML = '';
+     
+      for (let i = 1; i <= 5; i++) {
+        const floor1 = document.createElement("div");
+        floor1.classList.add("floor");
+        floor1.textContent = "Planta " + i;
+        floors1Div.appendChild(floor1);
+       
+        const floor2 = document.createElement("div");
+        floor2.classList.add("floor");
+        floor2.textContent = "Planta " + i;
+        floors2Div.appendChild(floor2);
+      }
+    }
+
+    // Actualizar la interfaz
+    function updateInfo() {
+      money1Display.textContent = money[0];
+      money2Display.textContent = money[1];
+     
+      materials1Display.textContent = materials[0].length > 0
+        ? materials[0].join(", ")
+        : "Ninguno";
+       
+      materials2Display.textContent = materials[1].length > 0
+        ? materials[1].join(", ")
+        : "Ninguno";
+       
+      winsXDisplay.textContent = winsX;
+      winsODisplay.textContent = winsO;
+      drawsDisplay.textContent = draws;
+      
+      // Actualizar contadores de materiales
+      updateMaterialCounts();
+      
+      // Actualizar indicador de turno
+      updateTurnIndicator();
+    }
+    
+    // Actualizar contadores de materiales
+    function updateMaterialCounts() {
+      const materialTypes = ["Madera", "Cristal", "Cemento"];
+      
+      for (let player = 0; player < 2; player++) {
+        for (let i = 0; i < materialTypes.length; i++) {
+          const count = materials[player].filter(m => m === materialTypes[i]).length;
+          document.getElementById(`material${player+1}-${i}`).textContent = count;
+        }
+      }
+    }
+    
+    // Actualizar indicador de turno
+    function updateTurnIndicator() {
+      const playerName = currentPlayer === "X" ? "Jugador 1 (X)" : (mode === 1 ? "CPU (O)" : "Jugador 2 (O)");
+      currentTurnDisplay.textContent = `Turno actual: ${playerName}`;
+    }
+   
+    function setBoardSize(size) {
+      boardSize = size;
+      resetGame();
+      showNotification(`Modo ${size} en raya activado`);
+    }
+
+    function setMode(selectedMode) {
+      mode = selectedMode;
+      resetGame();
+      if (mode === 1) {
+        document.getElementById("difficultySelect").style.display = "block";
+      } else {
+        document.getElementById("difficultySelect").style.display = "none";
+      }
+      showNotification(`Modo ${mode === 1 ? "1 Jugador (vs CPU)" : "2 Jugadores"} activado`);
+    }
+
+    function setDifficulty(level) {
+      difficulty = level;
+      showNotification("Dificultad seleccionada: " + level);
+    }
+
+    function handleMove(e) {
+      if (!gameActive) return;
+     
+      if (mode === 0) {
+        showNotification("Selecciona primero el modo de juego.");
+        return;
+      }
+
+      const index = e.target.dataset.index;
+      if (board[index] === "") {
+        board[index] = currentPlayer;
+        e.target.textContent = currentPlayer;
+        e.target.classList.add(currentPlayer === "X" ? "x" : "o");
+
+        const winPattern = checkWinner();
+        if (winPattern) {
+          gameActive = false;
+          const playerIndex = currentPlayer === "X" ? 0 : 1;
+          drawWinningLine(winPattern);
+          createConfetti();
+          
+          // Calcular recompensa según dificultad y tamaño del tablero
+          const rewardKey = `${boardSize}_${difficulty}`;
+          const rewardAmount = rewards.win[rewardKey] || 25;
+          
+          setTimeout(() => {
+            showCongratulations(`¡${currentPlayer === "X" ? "Jugador 1" : (mode === 1 ? "CPU" : "Jugador 2")} gana!`, `+${rewardAmount}$`);
+            if (currentPlayer === "X") {
+              winsX++;
+            } else {
+              winsO++;
+            }
+            money[playerIndex] += rewardAmount;
+            updateInfo();
+            highlightCurrentPlayer();
+          }, 500);
+          return;
+        } else if (board.every(cell => cell !== "")) {
+          gameActive = false;
+          
+          // Calcular recompensa por empate según tamaño del tablero
+          const drawReward = rewards.draw[boardSize] || 10;
+          
+          setTimeout(() => {
+            showCongratulations("¡Empate!", `+${drawReward}$ para ambos`);
+            draws++;
+            money[0] += drawReward;
+            money[1] += drawReward;
+            updateInfo();
+            highlightCurrentPlayer();
+          }, 500);
+          return;
+        }
+
+        if (mode === 2) {
+          currentPlayer = currentPlayer === "X" ? "O" : "X";
+          highlightCurrentPlayer();
+        } else if (mode === 1) {
+          currentPlayer = "O";
+          highlightCurrentPlayer();
+          setTimeout(cpuMove, 500);
+        }
+      }
+    }
+    
+    // Crear efecto de confeti
+    function createConfetti() {
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+      
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = (5 + Math.random() * 10) + 'px';
+        confetti.style.height = (5 + Math.random() * 10) + 'px';
+        confetti.style.animationDuration = (1 + Math.random() * 3) + 's';
+        document.body.appendChild(confetti);
+        
+        // Eliminar el confeti después de la animación
+        setTimeout(() => {
+          confetti.remove();
+        }, 4000);
+      }
+    }
+
+    function showCongratulations(title, message) {
+      congratsTitle.textContent = title;
+      congratsMessage.textContent = message;
+      congratulationsDiv.style.display = "block";
+      overlay.style.display = "block";
+    }
+
+    function hideCongratulations() {
+      congratulationsDiv.style.display = "none";
+      overlay.style.display = "none";
+    }
+
+    function drawWinningLine(pattern) {
+      // Eliminar línea anterior si existe
+      if (winningLine) {
+        winningLine.remove();
+      }
+     
+      const cellSize = boardSize === 3 ? 100 : 80;
+      const gap = 5;
+      const gameRect = game.getBoundingClientRect();
+     
+      // Calcular coordenadas relativas al contenedor del juego
+      const x1 = (pattern[0] % boardSize) * (cellSize + gap) + cellSize/2;
+      const y1 = Math.floor(pattern[0] / boardSize) * (cellSize + gap) + cellSize/2;
+      const x2 = (pattern[pattern.length-1] % boardSize) * (cellSize + gap) + cellSize/2;
+      const y2 = Math.floor(pattern[pattern.length-1] / boardSize) * (cellSize + gap) + cellSize/2;
+     
+      // Calcular longitud y ángulo de la línea
+      const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+     
+      // Crear elemento de línea
+      winningLine = document.createElement('div');
+      winningLine.classList.add('winning-line');
+      winningLine.style.width = length + 'px';
+      winningLine.style.height = '8px';
+      winningLine.style.transform = `rotate(${angle}deg)`;
+      winningLine.style.transformOrigin = '0 0';
+      winningLine.style.left = `${x1}px`;
+      winningLine.style.top = `${y1}px`;
+      winningLine.style.position = 'absolute';
+     
+      game.appendChild(winningLine);
+    }
+
+    function cpuMove() {
+      if (!gameActive) return;
+     
+      let choice = findBestMove();
+      board[choice] = "O";
+      const cell = document.querySelector(`[data-index='${choice}']`);
+      cell.textContent = "O";
+      cell.classList.add("o");
+
+      const winPattern = checkWinner();
+      if (winPattern) {
+        gameActive = false;
+        drawWinningLine(winPattern);
+        createConfetti();
+        
+        // Calcular recompensa según dificultad y tamaño del tablero
+        const rewardKey = `${boardSize}_${difficulty}`;
+        const rewardAmount = rewards.win[rewardKey] || 25;
+        
+        setTimeout(() => {
+          showCongratulations("¡La CPU gana!", `+${rewardAmount}$`);
+          winsO++;
+          money[1] += rewardAmount;
+          updateInfo();
+        }, 500);
+        return;
+      } else if (board.every(cell => cell !== "")) {
+        gameActive = false;
+        
+        // Calcular recompensa por empate según tamaño del tablero
+        const drawReward = rewards.draw[boardSize] || 10;
+        
+        setTimeout(() => {
+          showCongratulations("¡Empate!", `+${drawReward}$ para ambos`);
+          draws++;
+          money[0] += drawReward;
+          money[1] += drawReward;
+          updateInfo();
+        }, 500);
+        return;
+      }
+
+      currentPlayer = "X";
+      highlightCurrentPlayer();
+    }
+
+    function findBestMove() {
+      // Para 4 en raya, simplificamos la IA
+      if (boardSize === 4) {
+        // Estrategia simple para 4 en raya
+        let emptyCells = board.map((val, i) => val === "" ? i : null).filter(v => v !== null);
+       
+        // Primero intentar ganar
+        for (let i of emptyCells) {
+          board[i] = "O";
+          if (checkWinner()) {
+            board[i] = "";
+            return i;
+          }
+          board[i] = "";
+        }
+       
+        // Luego bloquear
+        for (let i of emptyCells) {
+          board[i] = "X";
+          if (checkWinner()) {
+            board[i] = "";
+            return i;
+          }
+          board[i] = "";
+        }
+       
+        // Si no, movimiento aleatorio
+        return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      }
+     
+      // Para 3 en raya, usar la estrategia original
+      const winPatterns = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+
+      // EASY: solo al azar
+      if (difficulty === "easy") {
+        return randomMove();
+      }
+
+      // MEDIUM: gana, bloquea, azar
+      if (difficulty === "medium") {
+        let move = winOrBlock("O") || winOrBlock("X") || randomMove();
+        return move;
+      }
+
+      // HARD: gana, bloquea, centro, esquina, azar
+      if (difficulty === "hard") {
+        let move = winOrBlock("O") || winOrBlock("X");
+        if (move !== null) return move;
+
+        if (board[4] === "") return 4; // centro
+        const corners = [0,2,6,8].filter(i => board[i] === "");
+        if (corners.length > 0) return corners[Math.floor(Math.random()*corners.length)];
+        return randomMove();
+      }
+    }
+
+    function winOrBlock(player) {
+      const winPatterns = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      for (let [a,b,c] of winPatterns) {
+        if (board[a] === player && board[b] === player && board[c] === "") return c;
+        if (board[a] === player && board[c] === player && board[b] === "") return b;
+        if (board[b] === player && board[c] === player && board[a] === "") return a;
+      }
+      return null;
+    }
+
+    function randomMove() {
+      let emptyCells = board.map((val, i) => val === "" ? i : null).filter(v => v !== null);
+      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    }
+
+    function checkWinner() {
+      // Verificar filas
+      for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col <= boardSize - boardSize; col++) {
+          const first = board[row * boardSize + col];
+          if (first === "") continue;
+          
+          let win = true;
+          for (let i = 1; i < boardSize; i++) {
+            if (board[row * boardSize + col + i] !== first) {
+              win = false;
+              break;
+            }
+          }
+          
+          if (win) {
+            const pattern = [];
+            for (let i = 0; i < boardSize; i++) {
+              pattern.push(row * boardSize + col + i);
+            }
+            return pattern;
+          }
+        }
+      }
+     
+      // Verificar columnas
+      for (let col = 0; col < boardSize; col++) {
+        for (let row = 0; row <= boardSize - boardSize; row++) {
+          const first = board[row * boardSize + col];
+          if (first === "") continue;
+          
+          let win = true;
+          for (let i = 1; i < boardSize; i++) {
+            if (board[(row + i) * boardSize + col] !== first) {
+              win = false;
+              break;
+            }
+          }
+          
+          if (win) {
+            const pattern = [];
+            for (let i = 0; i < boardSize; i++) {
+              pattern.push((row + i) * boardSize + col);
+            }
+            return pattern;
+          }
+        }
+      }
+     
+      // Verificar diagonal principal
+      for (let row = 0; row <= boardSize - boardSize; row++) {
+        for (let col = 0; col <= boardSize - boardSize; col++) {
+          const first = board[row * boardSize + col];
+          if (first === "") continue;
+          
+          let win = true;
+          for (let i = 1; i < boardSize; i++) {
+            if (board[(row + i) * boardSize + col + i] !== first) {
+              win = false;
+              break;
+            }
+          }
+          
+          if (win) {
+            const pattern = [];
+            for (let i = 0; i < boardSize; i++) {
+              pattern.push((row + i) * boardSize + col + i);
+            }
+            return pattern;
+          }
+        }
+      }
+     
+      // Verificar diagonal secundaria
+      for (let row = 0; row <= boardSize - boardSize; row++) {
+        for (let col = boardSize - 1; col >= boardSize - 1; col--) {
+          const first = board[row * boardSize + col];
+          if (first === "") continue;
+          
+          let win = true;
+          for (let i = 1; i < boardSize; i++) {
+            if (board[(row + i) * boardSize + col - i] !== first) {
+              win = false;
+              break;
+            }
+          }
+          
+          if (win) {
+            const pattern = [];
+            for (let i = 0; i < boardSize; i++) {
+              pattern.push((row + i) * boardSize + col - i);
+            }
+            return pattern;
+          }
+        }
+      }
+     
+      return null;
+    }
+
+    function clearBoard() {
+      board.fill("");
+      currentPlayer = "X";
+      gameActive = true;
+      document.querySelectorAll(".cell").forEach(c => {
+        c.textContent = "";
+        c.classList.remove("x", "o");
+      });
+     
+      // Eliminar línea ganadora
+      if (winningLine) {
+        winningLine.remove();
+        winningLine = null;
+      }
+     
+      highlightCurrentPlayer();
+    }
+
+    function resetGame() {
+      createBoard();
+      clearBoard();
+    }
+   
+    function resetScore() {
+      winsX = 0;
+      winsO = 0;
+      draws = 0;
+      updateInfo();
+    }
+
+    function highlightCurrentPlayer() {
+      if (currentPlayer === "X") {
+        player1Div.classList.add("active");
+        player2Div.classList.remove("active");
+      } else {
+        player2Div.classList.add("active");
+        player1Div.classList.remove("active");
+      }
+      updateTurnIndicator();
+    }
+
+    function buy(playerIndex, item, price) {
+      if (money[playerIndex] >= price) {
+        money[playerIndex] -= price;
+        materials[playerIndex].push(item);
+        updateInfo();
+        showNotification(`¡Jugador ${playerIndex + 1} ha comprado ${item}!`);
+      } else {
+        showNotification("No tienes suficiente dinero.", "error");
+      }
+    }
+
+    function build(playerIndex) {
+      const cost = 220;
+     
+      if (money[playerIndex] < cost) {
+        showNotification("No tienes suficiente dinero para construir. Se necesitan $220.", "error");
+        return;
+      }
+     
+      // Se necesitan 1 cristal, 2 maderas, 3 cementos
+      const required = { Cristal:1, Madera:2, Cemento:3 };
+      let inventory = { Cristal:0, Madera:0, Cemento:0 };
+
+      materials[playerIndex].forEach(m => inventory[m]++);
+     
+      if (inventory.Cristal >= 1 && inventory.Madera >= 2 && inventory.Cemento >= 3) {
+        money[playerIndex] -= cost;
+       
+        // Eliminar materiales usados
+        const newMaterials = [];
+        const used = { Cristal:0, Madera:0, Cemento:0 };
+       
+        for (const material of materials[playerIndex]) {
+          if (used[material] < required[material]) {
+            used[material]++;
+          } else {
+            newMaterials.push(material);
+          }
+        }
+       
+        materials[playerIndex] = newMaterials;
+        buildingProgress[playerIndex]++;
+       
+        updateInfo();
+        updateBuilding(playerIndex);
+       
+        if (buildingProgress[playerIndex] >= 5) {
+          createConfetti();
+          showCongratulations("¡Edificio completado!", `🎉 ¡Jugador ${playerIndex + 1} ha completado el edificio de 5 plantas! 🎉`);
+        } else {
+          showCongratulations("¡Planta construida!", `¡Jugador ${playerIndex + 1} ha construido una planta del edificio!`);
+        }
+      } else {
+        showNotification("No tienes suficientes materiales para construir una planta.", "error");
+      }
+    }
+
+    // Función para pagar un piso completo de golpe
+    function buildFullFloor(playerIndex) {
+      const cost = 307; // Coste total de los materiales: 50*2 + 20 + 37*3 = 100 + 20 + 111 = 231, más 76 de construcción = 307
+     
+      if (money[playerIndex] < cost) {
+        showNotification("No tienes suficiente dinero para pagar un piso completo. Se necesitan $307.", "error");
+        return;
+      }
+     
+      money[playerIndex] -= cost;
+      buildingProgress[playerIndex]++;
+     
+      updateInfo();
+      updateBuilding(playerIndex);
+     
+      if (buildingProgress[playerIndex] >= 5) {
+        createConfetti();
+        showCongratulations("¡Edificio completado!", `🎉 ¡Jugador ${playerIndex + 1} ha completado el edificio de 5 plantas! 🎉`);
+      } else {
+        showCongratulations("¡Planta construida!", `¡Jugador ${playerIndex + 1} ha pagado por una planta completa!`);
+      }
+    }
+
+    function updateBuilding(playerIndex) {
+      const floorsDiv = playerIndex === 0 ? floors1Div : floors2Div;
+      const floors = floorsDiv.querySelectorAll(".floor");
+     
+      // Construir desde abajo (planta 1, 2, 3...)
+      for (let i = 0; i < floors.length; i++) {
+        if (i < buildingProgress[playerIndex]) {
+          floors[floors.length - 1 - i].classList.add("built");
+          floors[floors.length - 1 - i].textContent = "Planta " + (buildingProgress[playerIndex] - i) + " ✅";
+        } else {
+          floors[floors.length - 1 - i].classList.remove("built");
+          floors[floors.length - 1 - i].textContent = "Planta " + (floors.length - i);
+        }
+      }
+    }
+   
+    // Inicializar la interfaz
+    createBoard();
+    createBuildings();
+    highlightCurrentPlayer();
+    initBackgroundMusic();
+   
+    // Ajustar la línea ganadora al redimensionar la ventana
+    window.addEventListener('resize', function() {
+      if (winningLine) {
+        const winPattern = checkWinner();
+        if (winPattern) {
+          winningLine.remove();
+          drawWinningLine(winPattern);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
