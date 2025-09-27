@@ -1,4 +1,4 @@
-# 🎮 3 o 4 en Raya - Construye tu Edificio
+# 🎮 © LIAM 3 o 4 en Raya - Construye tu Edificio
 
 Un juego educativo que combina el clásico 3 en raya con un sistema de construcción de edificios.
 
